@@ -3,7 +3,7 @@
 # Script Name: import_objects.sh                                                                                #
 # Description: This script is used for importing objects into  INFA repository.                                 #
 # Objects will be imported based on inventory file and control file configuration.                              #
-# Author: Shahrukh, Shaik (Wipro)                                                                                   #
+# Author: Shahrukh, Shaik                                                                           #
 # Usage: This script accepts user, password, incident number, Label Name (if any) as parameters                 #
 # Modification History:                                                                                         #
 # Date          Developer            Description                                                                #

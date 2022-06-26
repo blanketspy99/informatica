@@ -3,7 +3,7 @@
 # Script Name: export_objects.sh                                                                                   #
 # Description: This script is used for to take exports for performing new and delta AQRC_checks.                        #
 # Objects will be imported based on inventory file and control file configuration.                              #
-# Author: Shahrukh Shaik(Wipro)                                                                                 #
+# Author: Shahrukh Shaik			                                                                            #
 # Usage: This script accepts user, password, incident number, EmailRecipient (if any) as parameters             #
 # Modification History:                                                                                         #
 # Date          Developer            Description                                                                #
@@ -21,7 +21,7 @@ REPOSITORY=$2
 AQRC_USR=$3
 SRC_FLDR_NM=$4
 INCIDENT_NM=$5
-EMAIL=$6,$AQRC_USR@bp365.onmicrosoft.com
+EMAIL=$6,$AQRC_USR@email.com
 INFA_USR=$7
 INFA_PWD=$8
 INFA_VERSION=$9
@@ -543,74 +543,6 @@ fi
 #echo "Below list of objects imported from reposiotry $REPOSITORY and saved in $xmlDir"
 echo "Below list of objects imported from repository $REPOSITORY and saved in $xmlDir"  | tee -a $LogFileDir/$LogFileName
 cat $ScriptDir/Tmp/"obj_list_"$INCIDENT_NM".csv"  | tee -a $LogFileDir/$LogFileName
-
-#Taking an old export from Pre-Prod environment if exists. ( Export XML generates only if atleast one of the objects exists )
-# Repositpory String to search
-if [ $REPOSITORY == 'ISE_AWS_DEV_PC_RS_01' ] || [ $REPOSITORY == 'ISE_AWS_QTY_PC_RS_01' ] || [ $REPOSITORY == 'ISE_AWS_PROD_PC_RS_01' ] || [ $REPOSITORY == 'ISE_AWS_PREPROD_PC_RS_01' ] 
-then
-	INFA_REPCNX_INFO="$ScriptDir/Tmp/pmrepeuprod"$date
-	export INFA_REPCNX_INFO
-
-	Rep_Prod='ISE_AWS_PROD_PC_RS_01'
-else
-	RepByte=`echo $REPOSITORY | cut -b -8`
-	Rep_Prod=`echo $REPOSITORY | sed "s/$RepByte/Rep_EU_R/g"`
-fi
-pmrep connect -d ISE_AWS_PROD_PC_01 -r $Rep_Prod -n $INFA_USR -x $INFA_PWD > /dev/null
-
-pmrep objectexport -i $xmlDir/"PersistentInput_"$INCIDENT_NM".xml" -m -s -b -r -u $xmlold_Dir/$AQRC_USR"_"$INCIDENT_NM".XML" | tee -a $LogFileDir/"AQRC_"$INCIDENT_NM".log"
-
-[ ! -z $Parent ] && cp -f $xmlDir/$INCIDENT_NM".xml" $xmlnew_Dir/$AQRC_USR"_"$INCIDENT_NM".XML"
-[ -z $Parent ] && cp -f $xmlDir/$INCIDENT_NM".xml" $xmlnew_Dir/$AQRC_USR"_"$INCIDENT_NM".XML" 
-
-if [ -f $xmlold_Dir/$INCIDENT_NM".XML" ]
-then
-	echo "Old Export already Taken"
-else
-	INFA_REPCNX_INFO="$ScriptDir/Tmp/pmrepusprod"$date
-	export INFA_REPCNX_INFO
-
-	Rep_Prod=`echo $REPOSITORY | sed "s/$RepByte/Rep_US_R/g"`
-	pmrep connect -d ISE_AWS_US_PROD_PC_01 -r $Rep_Prod -n $INFA_USR -x $INFA_PWD > /dev/null
-	pmrep objectexport -i $xmlDir/"PersistentInput_"$INCIDENT_NM".xml" -m -s -b -r -u $xmlold_Dir/$AQRC_USR"_"$INCIDENT_NM".XML" | tee -a $LogFileDir/"AQRC_"$INCIDENT_NM".log"
-	[ ! -z $Parent ] && cp -f $xmlDir/$INCIDENT_NM".xml" $xmlnew_Dir/$AQRC_USR"_"$INCIDENT_NM".XML"
-	[ -z $Parent ] && cp -f $xmlDir/$INCIDENT_NM".xml" $xmlnew_Dir/$AQRC_USR"_"$INCIDENT_NM".XML"
-fi
-
-echo " AQRC objects exported successfully. "
-echo "Objects of AQRC completed successfully for incident number"
-#echo "$OBJ_LIST"
-
-echo -e ${body} >$ScriptDir/Tmp/"msgbody_"$INCIDENT_NM".txt"
-
-echo -e "\n" >>$ScriptDir/Tmp/"msgbody_"$INCIDENT_NM".txt"
-
-echo -e ${EmailSignature} >>$ScriptDir/Tmp/"msgbody_"$INCIDENT_NM".txt"
-
-echo "AQRC Objects exported successfully for incident number $INCIDENT_NM"
-
-#cat $ScriptDir/"msgbody"$INCIDENT_NM".txt"
-
-( cat $ScriptDir/Tmp/"msgbody_"$INCIDENT_NM".txt" ) | mailx -a $ScriptDir/Tmp/"obj_list_"$INCIDENT_NM".csv" -a $LogFileDir/$ExportLog -s "$INFA Deployment Automation: $INCIDENT_NM - $INFA Objects exported successfully" $EMAIL
-
-return_code=$?
-
-if [ $return_code -gt 0 ]
-then
-
-	echo "AQRC Objects exported successfully for build number $INCIDENT_NM but script encountered error while sending success email"  | tee -a $LogFileDir/$LogFileName
-
-fi
-
-
-#done< $INVENTORY_FILE_Dir/$INVENTORY_FILE
-### Start of OS migration of exported files to DEV
-#path="/app/informatica/infa_shared/ISE/SrcFiles/OS_Files_List_"$INCIDENT_NM".txt"
-#echo $xmlold_Dir/$INCIDENT_NM".XML" > $path
-#echo $xmlnew_Dir/$INCIDENT_NM".XML" >> $path
-#sh /app/informatica/infa_shared/ISE/Scripts/Run_OS_Export.sh DEV $AQRC_USR $AQRC_PWD $INCIDENT_NM
-#sh /app/informatica/infa_shared/ISE/Scripts/Run_OS_Import.sh DEV $AQRC_USR $AQRC_PWD $INCIDENT_NM
-### Start of OS migration of exported files to DEV
 
 
 cd $ScriptDir/Tmp
